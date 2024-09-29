@@ -1,6 +1,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sistema Especialista para Identificação de Pragas em Jardins e Pomares
-;; Adaptado para perguntas interativas e sugestões baseadas nos sintomas
+;; Adaptado para incluir validação de entradas do usuário
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Definição do template 'Sintoma'
@@ -16,37 +16,44 @@
    (slot tratamento)
    (slot tipo_tratamento))
 
-;; Regra para obter o aspecto das folhas
-(defrule GetAspectoFolhas
-   (declare (salience 9))
-   =>
-   (printout t "Como estão as folhas? (enroladas/murchas/picotadas/esburacadas/nenhum)" crlf)
+;; Função auxiliar para validar a entrada do usuário
+(deffunction valida-entrada (?pergunta $?opcoes)
+   (printout t ?pergunta crlf)
    (bind ?resposta (read))
-   (assert (Sintoma (aspecto_folhas ?resposta))))
+   (while (not (member$ ?resposta ?opcoes)) do
+      (printout t "Entrada incorreta. Tente novamente." crlf)
+      (printout t ?pergunta crlf)
+      (bind ?resposta (read))
+   )
+   (return ?resposta))
 
-;; Regra para obter a cor das folhas
-(defrule GetCorFolhas
-   (declare (salience 9))
-   =>
-   (printout t "Qual a cor das folhas? (amareladas/marrons/manchas_esbranquicadas/nenhum)" crlf)
-   (bind ?resposta (read))
-   (assert (Sintoma (cor_folhas ?resposta))))
-
-;; Regra para obter o estado das flores
-(defrule GetFlores
-   (declare (salience 9))
-   =>
-   (printout t "Como estão as flores? (murchas/marrons/nenhum)" crlf)
-   (bind ?resposta (read))
-   (assert (Sintoma (flores ?resposta))))
-
-;; Regra para obter o estado do caule
+;; Regra para obter o estado do caule com validação
 (defrule GetCaule
    (declare (salience 9))
    =>
-   (printout t "Como está o caule? (podre_e_mole/queimado/nenhum)" crlf)
-   (bind ?resposta (read))
-   (assert (Sintoma (caule ?resposta))))
+   (bind ?caule (valida-entrada "Como está o caule? (podre_e_mole/queimado/nenhum)" podre_e_mole queimado nenhum))
+   (assert (Sintoma (caule ?caule))))
+
+;; Regra para obter o estado das flores com validação
+(defrule GetFlores
+   (declare (salience 9))
+   =>
+   (bind ?flores (valida-entrada "Como estão as flores? (murchas/marrons/nenhum)" murchas marrons nenhum))
+   (assert (Sintoma (flores ?flores))))
+
+;; Regra para obter a cor das folhas com validação
+(defrule GetCorFolhas
+   (declare (salience 9))
+   =>
+   (bind ?cor_folhas (valida-entrada "Qual a cor das folhas? (amareladas/marrons/manchas_esbranquicadas/nenhum)" amareladas marrons manchas_esbranquicadas nenhum))
+   (assert (Sintoma (cor_folhas ?cor_folhas))))
+
+;; Regra para obter o aspecto das folhas com validação
+(defrule GetAspectoFolhas
+   (declare (salience 9))
+   =>
+   (bind ?aspecto_folhas (valida-entrada "Como estão as folhas? (enroladas/murchas/picotadas/esburacadas/nenhum)" enroladas murchas picotadas esburacadas nenhum))
+   (assert (Sintoma (aspecto_folhas ?aspecto_folhas))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Regras para identificar a praga baseada nos sintomas
