@@ -1,185 +1,136 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sistema Especialista para Identificação de Pragas em Jardins e Pomares
-;; Implementado em CLIPS
+;; Adaptado para perguntas interativas e sugestões baseadas nos sintomas
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(deftemplate praga
-   (slot nome)
-   (slot aparencia)
-   (slot aspecto_folhas)
-   (slot cor_folhas)
-   (slot flores)
-   (slot caule)
-   (slot tratamento)
-   (slot tipo_tratamento))
-
-(deffacts pragas
-   ;; Pragas de Animais
-   (praga
-      (nome pulgao)
-      (aparencia inseto_preto_ou_verde_esbranquicado)
-      (aspecto_folhas enroladas)
-      (cor_folhas amareladas)
-      (flores nenhum)
-      (caule nenhum)
-      (tratamento mistura_agua_detergente_neutro)
-      (tipo_tratamento organico))
-
-   (praga
-      (nome acaro_do_bronzeamento)
-      (aparencia pequenos_aracnideos)
-      (aspecto_folhas murchas)
-      (cor_folhas marrons)
-      (flores nenhum)
-      (caule nenhum)
-      (tratamento biopesticida_oximatrine)
-      (tipo_tratamento quimico))
-
-   (praga
-      (nome lagarta)
-      (aparencia corpo_cilindrico_verde)
-      (aspecto_folhas picotadas)
-      (cor_folhas nenhum)
-      (flores nenhum)
-      (caule nenhum)
-      (tratamento mistura_cebola_alho_agua)
-      (tipo_tratamento organico))
-
-   (praga
-      (nome caracol)
-      (aparencia moluscos_com_casco)
-      (aspecto_folhas esburacadas_com_limo)
-      (cor_folhas nenhum)
-      (flores nenhum)
-      (caule nenhum)
-      (tratamento bicarbonato_sodio_solo)
-      (tipo_tratamento organico))
-
-   (praga
-      (nome besouro)
-      (aparencia insetos_de_casco_escuro)
-      (aspecto_folhas pequenos_furos)
-      (cor_folhas nenhum)
-      (flores nenhum)
-      (caule nenhum)
-      (tratamento solucao_agua_ervas_aromaticas)
-      (tipo_tratamento organico))
-
-   ;; Pragas de Fungos
-   (praga
-      (nome ferrugem_do_buxo)
-      (aparencia nenhum)
-      (aspecto_folhas nenhum)
-      (cor_folhas circulos_alaranjados)
-      (flores nenhum)
-      (caule nenhum)
-      (tratamento oleo_de_neem)
-      (tipo_tratamento organico))
-
-   (praga
-      (nome mofo)
-      (aparencia nenhum)
-      (aspecto_folhas nenhum)
-      (cor_folhas nenhum)
-      (flores murchas_e_marrons)
-      (caule nenhum)
-      (tratamento extratos_aquosos_gengibre)
-      (tipo_tratamento organico))
-
-   (praga
-      (nome oidio)
-      (aparencia nenhum)
-      (aspecto_folhas nenhum)
-      (cor_folhas manchas_esbranquicadas)
-      (flores nenhum)
-      (caule nenhum)
-      (tratamento mistura_bicarbonato_sodio_agua)
-      (tipo_tratamento organico))
-
-   (praga
-      (nome mancha_negra)
-      (aparencia nenhum)
-      (aspecto_folhas nenhum)
-      (cor_folhas manchas_negras_arredondadas)
-      (flores nenhum)
-      (caule nenhum)
-      (tratamento poda_ramos_contaminados)
-      (tipo_tratamento cultural))
-
-   ;; Pragas de Bactérias
-   (praga
-      (nome murcha_bacteriana)
-      (aparencia nenhum)
-      (aspecto_folhas nenhum)
-      (cor_folhas nenhum)
-      (flores nenhum)
-      (caule podre_e_mole)
-      (tratamento poda_ramos_contaminados)
-      (tipo_tratamento cultural))
-
-   (praga
-      (nome fogo_bacteriano)
-      (aparencia nenhum)
-      (aspecto_folhas queimadas)
-      (cor_folhas marrons)
-      (flores nenhum)
-      (caule queimado)
-      (tratamento biopesticida_fago)
-      (tipo_tratamento quimico))
-)
-
-(deftemplate sintoma
+;; Definição do template 'Sintoma'
+(deftemplate Sintoma
    (slot aspecto_folhas)
    (slot cor_folhas)
    (slot flores)
    (slot caule))
 
-(deffacts sintomas
-   ;; Fatos de sintomas podem ser inseridos aqui com base no caso atual
-)
+;; Definição do template 'Praga'
+(deftemplate Praga
+   (slot nome)
+   (slot tratamento)
+   (slot tipo_tratamento))
 
-(defrule diagnosticar-praga
-   ?praga <- (praga
-               (aspecto_folhas ?aspecto_folhas_praga)
-               (cor_folhas ?cor_folhas_praga)
-               (flores ?flores_praga)
-               (caule ?caule_praga))
-   ?sintoma <- (sintoma
-               (aspecto_folhas ?aspecto_folhas)
-               (cor_folhas ?cor_folhas)
-               (flores ?flores)
-               (caule ?caule))
-   (test (and 
-           (or (eq ?aspecto_folhas_praga ?aspecto_folhas) (eq ?aspecto_folhas_praga nenhum))
-           (or (eq ?cor_folhas_praga ?cor_folhas) (eq ?cor_folhas_praga nenhum))
-           (or (eq ?flores_praga ?flores) (eq ?flores_praga nenhum))
-           (or (eq ?caule_praga ?caule) (eq ?caule_praga nenhum))))
+;; Regra para obter o aspecto das folhas
+(defrule GetAspectoFolhas
+   (declare (salience 9))
    =>
-   (printout t "Praga identificada: " ?praga:nome crlf)
-   (printout t "Tratamento recomendado: " ?praga:tratamento " (" ?praga:tipo_tratamento ")" crlf)
-)
+   (printout t "Como estão as folhas? (enroladas/murchas/picotadas/esburacadas/nenhum)" crlf)
+   (bind ?resposta (read))
+   (assert (Sintoma (aspecto_folhas ?resposta))))
 
-;; Inserir fatos de sintomas para testar o sistema
-(defrule insere-caso-exemplo-1
+;; Regra para obter a cor das folhas
+(defrule GetCorFolhas
+   (declare (salience 9))
    =>
-   (assert (sintoma
-               (aspecto_folhas enroladas)
-               (cor_folhas amareladas)
-               (flores nenhum)
-               (caule nenhum)))
-   (printout t "Caso exemplo 1 inserido: Folhas enroladas e amareladas." crlf))
+   (printout t "Qual a cor das folhas? (amareladas/marrons/manchas_esbranquicadas/nenhum)" crlf)
+   (bind ?resposta (read))
+   (assert (Sintoma (cor_folhas ?resposta))))
 
-;; Outros casos de exemplo podem ser definidos aqui
-(defrule insere-caso-exemplo-2
+;; Regra para obter o estado das flores
+(defrule GetFlores
+   (declare (salience 9))
    =>
-   (assert (sintoma
-               (aspecto_folhas queimadas)
-               (cor_folhas marrons)
-               (flores nenhum)
-               (caule queimado)))
-   (printout t "Caso exemplo 2 inserido: Folhas queimadas e marrons, caule queimado." crlf))
+   (printout t "Como estão as flores? (murchas/marrons/nenhum)" crlf)
+   (bind ?resposta (read))
+   (assert (Sintoma (flores ?resposta))))
+
+;; Regra para obter o estado do caule
+(defrule GetCaule
+   (declare (salience 9))
+   =>
+   (printout t "Como está o caule? (podre_e_mole/queimado/nenhum)" crlf)
+   (bind ?resposta (read))
+   (assert (Sintoma (caule ?resposta))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Uso do sistema
-;; Execute o comando (run) após a inserção dos sintomas para realizar o diagnóstico.
+;; Regras para identificar a praga baseada nos sintomas
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Regra para diagnosticar pulgão
+(defrule DiagnosticarPulgao
+   (and (Sintoma (aspecto_folhas enroladas))
+        (Sintoma (cor_folhas amareladas))
+        (Sintoma (flores nenhum))
+        (Sintoma (caule nenhum)))
+   =>
+   (assert (Praga (nome pulgao) (tratamento mistura_agua_detergente_neutro) (tipo_tratamento organico)))
+   (printout t "Praga Identificada: Pulgão" crlf)
+   (printout t "Tratamento recomendado: Mistura de água com detergente neutro (Orgânico)" crlf))
+
+;; Regra para diagnosticar ácaro do bronzeamento
+(defrule DiagnosticarAcaroBronzeamento
+   (and (Sintoma (aspecto_folhas murchas))
+        (Sintoma (cor_folhas marrons))
+        (Sintoma (flores nenhum))
+        (Sintoma (caule nenhum)))
+   =>
+   (assert (Praga (nome acaro_do_bronzeamento) (tratamento biopesticida_oximatrine) (tipo_tratamento quimico)))
+   (printout t "Praga Identificada: Ácaro do Bronzeamento" crlf)
+   (printout t "Tratamento recomendado: Biopesticida Oximatrine (Químico)" crlf))
+
+;; Regra para diagnosticar lagarta
+(defrule DiagnosticarLagarta
+   (and (Sintoma (aspecto_folhas picotadas))
+        (Sintoma (cor_folhas nenhum))
+        (Sintoma (flores nenhum))
+        (Sintoma (caule nenhum)))
+   =>
+   (assert (Praga (nome lagarta) (tratamento mistura_cebola_alho_agua) (tipo_tratamento organico)))
+   (printout t "Praga Identificada: Lagarta" crlf)
+   (printout t "Tratamento recomendado: Mistura de cebola, alho e água (Orgânico)" crlf))
+
+;; Regra para diagnosticar ferrugem do buxo
+(defrule DiagnosticarFerrugemBuxo
+   (and (Sintoma (cor_folhas circulos_alaranjados))
+        (Sintoma (flores nenhum))
+        (Sintoma (caule nenhum)))
+   =>
+   (assert (Praga (nome ferrugem_do_buxo) (tratamento oleo_de_neem) (tipo_tratamento organico)))
+   (printout t "Praga Identificada: Ferrugem do Buxo" crlf)
+   (printout t "Tratamento recomendado: Óleo de Neem (Orgânico)" crlf))
+
+;; Regra para diagnosticar mofo
+(defrule DiagnosticarMofo
+   (and (Sintoma (flores murchas_e_marrons))
+        (Sintoma (cor_folhas nenhum)))
+   =>
+   (assert (Praga (nome mofo) (tratamento extratos_aquosos_gengibre) (tipo_tratamento organico)))
+   (printout t "Praga Identificada: Mofo" crlf)
+   (printout t "Tratamento recomendado: Extratos aquosos de gengibre (Orgânico)" crlf))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Sugestão de tratamento e endereço de compra de produtos
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Regra para endereços de tratamento
+(defrule EnderecoTratamentoPulgao
+   (Praga (nome pulgao))
+   =>
+   (printout t "Local de compra de produtos: Rua das Plantas, 123" crlf))
+
+(defrule EnderecoTratamentoAcaro
+   (Praga (nome acaro_do_bronzeamento))
+   =>
+   (printout t "Local de compra de produtos: Av. dos Biopesticidas, 456" crlf))
+
+(defrule EnderecoTratamentoLagarta
+   (Praga (nome lagarta))
+   =>
+   (printout t "Local de compra de produtos: Rua do Orgânico, 789" crlf))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Título do sistema
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defrule titulo
+   (declare (salience 10))
+   =>
+   (printout t crlf crlf)
+   (printout t "Sistema Especialista - Identificação de Pragas" crlf crlf))
+
